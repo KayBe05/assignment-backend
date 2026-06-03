@@ -1,0 +1,55 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Company {
+  id        String         @id @default(uuid())
+  name      String         @unique
+  rawNames  String[]       
+  createdAt DateTime       @default(now())
+  updatedAt DateTime       @updatedAt
+  levels    Level[]
+  salaries  Compensation[]
+}
+
+model Role {
+  id        String         @id @default(uuid())
+  title     String         @unique 
+  salaries  Compensation[]
+}
+
+model Level {
+  id          String         @id @default(uuid())
+  name        String         
+  companyId   String
+  company     Company        @relation(fields: [companyId], references: [id], onDelete: Cascade)
+  rank        Int            
+  salaries    Compensation[]
+
+  @@unique([name, companyId])
+}
+
+model Compensation {
+  id         String   @id @default(uuid())
+  companyId  String
+  company    Company  @relation(fields: [companyId], references: [id])
+  roleId     String
+  role       Role     @relation(fields: [roleId], references: [id])
+  levelId    String
+  level      Level    @relation(fields: [levelId], references: [id])
+  
+  baseSalary Float
+  stockGrant Float    @default(0)
+  bonus      Float    @default(0)
+  totalComp  Float    
+  
+  location   String   
+  experience Int      
+  hash       String   @unique 
+  createdAt  DateTime @default(now())
+}
